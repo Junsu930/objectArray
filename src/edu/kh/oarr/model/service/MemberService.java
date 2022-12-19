@@ -10,13 +10,14 @@ public class MemberService {
 	private Member[] memberArr = new Member[5];
 	
 	// 현재 로그인한 회원의 정보를 저장할 변수 선언
-	private Member loginMemver = null;
+	private Member loginMember = null;
 	
 	public MemberService() { //기본 생성자
 		// memberArr 배열 0, 1, 2 인덱스 초기화
-		memberArr[0] = new Member("user01", "user01", "김밥밥", 30, "인천");
-		memberArr[1] = new Member("user02", "user02", "이짱짱", 32, "김포");
-		memberArr[2] = new Member("user03", "user03", "강콩콩", 30, "의정부");
+
+		memberArr[0] = new Member("a1", "a1", "김방방", 20, "인천");
+		memberArr[1] = new Member("a2", "a2", "김뿡뿡", 22, "강릉");
+		memberArr[2] = new Member("a3", "a3", "김차차", 10, "인천");
 		
 	}
 	
@@ -40,12 +41,21 @@ public class MemberService {
 			sc.nextLine();
 			
 			switch(menuNum) {
-			case 1 : signUp(); break;
-			case 2 :
-			case 3 :
-			case 4 :
-			case 5 :
-			case 0 :
+			case 1 : System.out.println(signUp()); break;
+			case 2 : System.out.println(login());; break;
+			case 3 : System.out.println(selecMember()); break;
+			case 4 : int result = updateMember();
+					if(result == -1) {
+						System.out.println("로그인 먼저 진행하세요");
+					}else if (result == 1) {
+						System.out.println("수정 완료");
+					}else {
+						System.out.println("수정 실패(비밀번호가 다릅니다)");
+					}
+					break;
+					
+			case 5 : System.out.println(findMember());
+			case 0 : System.out.println("프로그램을 종료합니다."); break;
 			default : System.out.println("\n 잘못 입력하셨습니다.");
 			}
 		
@@ -61,13 +71,13 @@ public class MemberService {
 		// 빈 공간의 인덱스 번호를 얻어오기 -> 새로운 메소드 작성
 		
 		int index = emptyIndex(); // memberArr 배열에서 비어있는 인덱스를 반환받음.
-		System.out.println("현재 회원 수" + index);
+		System.out.print("현재 회원 수 : " + index );
 		
 		if(index == -1) { // 회원 가입 불가
 			return "회원 가입이 불가능합니다. (인원 초과)";
 		}else {
 			
-			System.out.print("아이디 : ");
+			System.out.print("\n아이디 : ");
 			String memberId = sc.next();
 			
 			System.out.print("비밀번호 : ");
@@ -103,7 +113,7 @@ public class MemberService {
 		// memberArr 배열을 하나씩 접근 0번 인덱스부터 끝까지 접근
 		// 참조하는 값이 null 인 경우 인덱스를 반환
 		for(int i =0; i < memberArr.length; i++) {
-			if(memberArr[i].equals(null)) {
+			if(memberArr[i] == null) {
 				return i;
 			}
 		}
@@ -120,8 +130,102 @@ public class MemberService {
 		//		3) 로그인 회원 정보 객체 (Member)를 참조하는 변수 loginMember 에
 		//   		현재 접근중인 memberArr[i] 요소에 저장된 주소를 얕은 복사 
 		// 4) 로그인 성공 / 실패 여부에 따라 결과값 반환
-		return "";
+		int index = emptyIndex();
 		
+		if (index ==0) {
+			return "\n가입자가 없습니다. ";
+		} else {
+			System.out.println("======= 로그인 =======");
+			System.out.print("아이디 : ");
+			String idCheck = sc.next();
+			System.out.print("비밀번호 : ");
+			String pwCheck = sc.next();
+			
+			for(int i =0; i<index; i++) {
+				if(idCheck.equals(memberArr[i].getMemberId())&& pwCheck.equals(memberArr[i].getMemberPw())){
+					loginMember = memberArr[i];
+					return "\n로그인 성공";	
+				}
+			}
+		}
+		return "\n로그인 실패(회원 정보 오류)";
+	}
+	
+	//3. 회원 정보 조회
+	public String selecMember() {
+		if(loginMember == null) {
+			return "\n로그인먼저 진행해주세요";
+		}else {
+			System.out.println("*******회원 정보*******\n");
+			String member = "\nID: " + loginMember.getMemberId();
+			member += "\n이름 : " + loginMember.getMemberName();
+			member += "\n나이 : " + loginMember.getMemberAge();
+			
+			return member;
+		}
+	}
+
+	//4. 회원 정보 수정
+	public int updateMember() {
+		System.out.println("======= 회원 정보 수정 ========");
 		
+				
+		//1)로그인 여부 판별
+		//  로그인이 되어있지 않으면 -1 반환
+		if(loginMember == null) {
+			return -1;
+		}
+		
+		//2)수정할 회원 정보 입력 받기(이름,나이)
+		System.out.print("수정할 이름 입력 :");
+		String inputName = sc.next();
+		
+		System.out.print("수정할 나이 입력 : ");
+		int inputAge = sc.nextInt();
+	
+		sc.nextLine();
+		
+		//3)비밀번호 입력 받아서 
+		//	로그인한 회원의 비밀번호와 일치한지 확인 
+		
+		System.out.print("비밀번호 입력 : ");
+		String inputPw = sc.next();
+		
+		if( inputPw.equals( loginMember.getMemberPw())) {
+			//4)비밀번호 같은 경우
+			//	로그인한 회원의 이름, 나이 정보를 입력받은 값으로 변경 후 1 반환
+			loginMember.setMemberName( inputName) ;
+			//입력받은 inputName을 loginMeber가 참조하는 Member객체의 필드 memberName에 대입 
+			loginMember.setMemberAge( inputAge) ;
+			return 1;
+		} else {
+			return 0;
+			// 비밀번호가 다르면 0
+		}
+	}
+
+	//5. 회원 검색(지역)
+	public String findMember() {
+		System.out.println("======= 회원 검색 =======");
+		System.out.print("검색할 지역을 입력하세요 : ");
+		String findRegion = sc.next();
+		int index = emptyIndex();
+		String str = "";
+		int count = 0;
+		
+		for(int i =0; i<index; i++) {
+			if(memberArr[i].getRegion().equals(findRegion)) {
+				
+				str += memberArr[i].getMemberId() + " ";	
+				count ++;
+			}
+			
+			}
+
+			if(count == 0) {
+				return "해당 지역에 거주하는 회원이 없습니다.";
+		}else {
+			return findRegion + "거주 회원 : " + str;
+		}
 	}
 }
